@@ -51,18 +51,21 @@ Yanıtı belirtilen JSON şemasına uygun ver.`;
 
         const result = await provider.generateJson<TrendDto>(prompt, TREND_JSON_SCHEMA);
 
-        // Persist to DB
-        const report = await this.prisma.trendReport.create({
-            data: {
-                title: result.baslik || `${query} Trend Raporu`,
-                summary: result.ozet || '',
-                sentimentScore: result.duyguSkoru || 0.75,
-                keywords: result.anahtarKelimeler || [],
-                sourceUrls: [],
-                images: [],
-            },
-        });
-
-        return { ...result, id: report.id };
+        // Persist to DB (non-blocking)
+        try {
+            const report = await this.prisma.trendReport.create({
+                data: {
+                    title: result.baslik || `${query} Trend Raporu`,
+                    summary: result.ozet || '',
+                    sentimentScore: typeof result.duyguSkoru === 'number' ? result.duyguSkoru : 0.75,
+                    keywords: result.anahtarKelimeler || [],
+                    sourceUrls: [],
+                    images: [],
+                },
+            });
+            return { ...result, id: report.id };
+        } catch {
+            return result;
+        }
     }
 }

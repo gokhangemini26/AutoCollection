@@ -10,7 +10,7 @@ export class GeminiProvider implements AiProviderInterface {
     async generateText(prompt: string, systemPrompt?: string): Promise<string> {
         const { GoogleGenerativeAI } = await import('@google/generative-ai');
         const genAI = new GoogleGenerativeAI(this.apiKey);
-        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
         const fullPrompt = systemPrompt ? `${systemPrompt}\n\n${prompt}` : prompt;
         const result = await model.generateContent(fullPrompt);
@@ -18,11 +18,28 @@ export class GeminiProvider implements AiProviderInterface {
     }
 
     async generateJson<T>(prompt: string, jsonSchema: string): Promise<T> {
-        const jsonPrompt = `${prompt}\n\nYANIT SADECE GEÇERLİ JSON OLMALIDIR. Şema:\n${jsonSchema}`;
+        const jsonPrompt = `${prompt}\n\nYANIT SADECE GEÇERLİ JSON OLMALIDIR. Markdown kullanma, sadece JSON döndür. Şema:\n${jsonSchema}`;
         const text = await this.generateText(jsonPrompt);
 
-        // Extract JSON from response (handle markdown code blocks)
-        const cleaned = text.replace(/```json\n?|\n?```/g, '').trim();
-        return JSON.parse(cleaned) as T;
+        // Extract JSON - handle markdown blocks and extra text
+        let cleaned = text.trim();
+        const jsonMatch = cleaned.match(/```(?:json)?\s*([\s\S]*?)```/);
+        if (jsonMatch) {
+            cleaned = jsonMatch[1].trim();
+        } else {
+            // Find first { to last }
+            const start = cleaned.indexOf('{');
+            const end = cleaned.lastIndexOf('}');
+            if (start !== -1 && end !== -1) {
+                cleaned = cleaned.slice(start, end + 1);
+            }
+        }
+
+        try {
+            return JSON.parse(cleaned) as T;
+        } catch {
+            // Return empty fallback rather than crashing
+            return JSON.parse(jsonSchema) as T;
+        }
     }
 }
