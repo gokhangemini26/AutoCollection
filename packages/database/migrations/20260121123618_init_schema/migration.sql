@@ -1,6 +1,3 @@
--- CreateExtension
-CREATE EXTENSION IF NOT EXISTS "pgvector";
-
 -- CreateEnum
 CREATE TYPE "UserRole" AS ENUM ('GM', 'ADMIN', 'MODULE_USER');
 
@@ -115,7 +112,6 @@ CREATE TABLE "VisualAsset" (
     "type" "VisualType" NOT NULL,
     "aiLabel" "AiLabel" NOT NULL,
     "confidenceScore" DOUBLE PRECISION,
-    "embedding" vector(512),
     "parentId" TEXT,
 
     CONSTRAINT "VisualAsset_pkey" PRIMARY KEY ("id")
