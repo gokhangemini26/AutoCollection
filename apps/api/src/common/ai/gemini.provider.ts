@@ -10,7 +10,7 @@ export class GeminiProvider implements AiProviderInterface {
     async generateText(prompt: string, systemPrompt?: string): Promise<string> {
         const { GoogleGenerativeAI } = await import('@google/generative-ai');
         const genAI = new GoogleGenerativeAI(this.apiKey);
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
         const fullPrompt = systemPrompt ? `${systemPrompt}\n\n${prompt}` : prompt;
         const result = await model.generateContent(fullPrompt);
