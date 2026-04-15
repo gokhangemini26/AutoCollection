@@ -10,6 +10,7 @@
     "dependencies": {
         "@anthropic-ai/sdk": "^0.89.0",
         "@fashion-erp/shared": "*",
+        "@google/genai": "^1.50.1",
         "@google/generative-ai": "^0.24.1",
         "@nestjs/common": "^10.0.0",
         "@nestjs/config": "^3.0.0",
