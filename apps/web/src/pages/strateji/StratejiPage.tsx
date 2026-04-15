@@ -22,7 +22,7 @@ export const StratejiPage = () => {
     const [form, setForm] = useState(INITIAL_FORM);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const { actions } = useAgUiStore();
+    const { actions, context } = useAgUiStore();
 
     const load = () => {
         setLoading(true);
@@ -43,12 +43,9 @@ export const StratejiPage = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
-
-        if (!actions.validateAction('CREATE_DESIGN', {})) return;
-
         setSaving(true);
         try {
-            await api.post('/strategy/seasons', {
+            const newSeason = await api.post<Season>('/strategy/seasons', {
                 name: form.name,
                 budget: parseFloat(form.budget),
                 skuTarget: parseInt(form.skuTarget, 10),
@@ -56,6 +53,8 @@ export const StratejiPage = () => {
                 startDate: form.startDate || undefined,
                 endDate: form.endDate || undefined,
             });
+            actions.setContext({ activeSeasonId: newSeason.id, currentModule: 1 });
+            actions.setStatus('IDLE', null);
             setShowModal(false);
             setForm(INITIAL_FORM);
             load();
@@ -64,6 +63,11 @@ export const StratejiPage = () => {
         } finally {
             setSaving(false);
         }
+    };
+
+    const selectSeason = (s: Season) => {
+        actions.setContext({ activeSeasonId: s.id, currentModule: 1 });
+        actions.setStatus('IDLE', null);
     };
 
     return (
@@ -81,6 +85,12 @@ export const StratejiPage = () => {
                 </button>
             </div>
 
+            {context.activeSeasonId && (
+                <div className="mb-4 px-4 py-2 bg-emerald-900/30 border border-emerald-800 rounded text-emerald-400 text-sm">
+                    Aktif Sezon: {seasons.find(s => s.id === context.activeSeasonId)?.name ?? context.activeSeasonId}
+                </div>
+            )}
+
             {loading ? (
                 <div className="text-stone-500 text-sm">{TR.genel.yukluyor}</div>
             ) : seasons.length === 0 ? (
@@ -90,7 +100,10 @@ export const StratejiPage = () => {
             ) : (
                 <div className="space-y-4">
                     {seasons.map((s) => (
-                        <div key={s.id} className="p-5 border border-stone-800 rounded bg-stone-950 hover:border-stone-700 transition-colors">
+                        <div
+                            key={s.id}
+                            className={`p-5 border rounded bg-stone-950 transition-colors ${context.activeSeasonId === s.id ? 'border-emerald-700' : 'border-stone-800 hover:border-stone-700'}`}
+                        >
                             <div className="flex justify-between items-start">
                                 <div>
                                     <h3 className="text-lg font-medium text-white">{s.name}</h3>
@@ -99,12 +112,22 @@ export const StratejiPage = () => {
                                         {new Date(s.endDate).toLocaleDateString('tr-TR')}
                                     </p>
                                 </div>
-                                <span className={`text-xs px-2 py-1 rounded ${s.status === 'ACTIVE' ? 'bg-emerald-900/40 text-emerald-400' :
-                                    s.status === 'PLANNED' ? 'bg-blue-900/40 text-blue-400' :
-                                        'bg-stone-800 text-stone-500'
-                                    }`}>
-                                    {TR.strateji.durum[s.status as keyof typeof TR.strateji.durum] ?? s.status}
-                                </span>
+                                <div className="flex items-center gap-2">
+                                    <span className={`text-xs px-2 py-1 rounded ${s.status === 'ACTIVE' ? 'bg-emerald-900/40 text-emerald-400' :
+                                        s.status === 'PLANNED' ? 'bg-blue-900/40 text-blue-400' :
+                                            'bg-stone-800 text-stone-500'
+                                        }`}>
+                                        {TR.strateji.durum[s.status as keyof typeof TR.strateji.durum] ?? s.status}
+                                    </span>
+                                    {context.activeSeasonId !== s.id && (
+                                        <button
+                                            onClick={() => selectSeason(s)}
+                                            className="text-xs px-3 py-1 bg-stone-800 hover:bg-stone-700 text-stone-300 rounded transition-colors"
+                                        >
+                                            Seç
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                             {s.strategyDoc && (
                                 <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-stone-800">
@@ -131,7 +154,6 @@ export const StratejiPage = () => {
                 </div>
             )}
 
-            {/* Modal */}
             {showModal && (
                 <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
                     <div className="bg-stone-950 border border-stone-800 rounded-lg p-6 w-full max-w-md">
