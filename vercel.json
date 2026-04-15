@@ -1,38 +1,9 @@
 {
     "version": 2,
-    "framework": null,
-    "buildCommand": "npm run build:all",
+    "buildCommand": "cd apps/web && npm install && npm run build",
     "outputDirectory": "apps/web/dist",
-    "ignoreCommand": "git diff --quiet HEAD^ HEAD .",
+    "installCommand": "echo skip",
     "rewrites": [
-        {
-            "source": "/api/(.*)",
-            "destination": "/api"
-        }
-    ],
-    "routes": [
-        {
-            "src": "/api/(.*)",
-            "dest": "/api/index.ts"
-        },
-        {
-            "src": "/assets/(.*)",
-            "dest": "/apps/web/dist/assets/$1"
-        },
-        {
-            "src": "/favicon.ico",
-            "dest": "/apps/web/dist/favicon.ico"
-        },
-        {
-            "src": "/robots.txt",
-            "dest": "/apps/web/dist/robots.txt"
-        },
-        {
-            "handle": "filesystem"
-        },
-        {
-            "src": "/(.*)",
-            "dest": "/apps/web/dist/index.html"
-        }
+        { "source": "/(.*)", "destination": "/index.html" }
     ]
 }
