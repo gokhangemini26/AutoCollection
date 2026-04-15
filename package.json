@@ -15,7 +15,7 @@
         "db:migrate": "prisma migrate dev --schema=packages/database/schema.prisma",
         "db:seed": "ts-node packages/database/seed.ts",
         "db:reset": "prisma migrate reset --schema=packages/database/schema.prisma",
-        "postinstall": "npx prisma generate --schema=packages/database/schema.prisma"
+        "postinstall": "npx prisma@5 generate --schema=packages/database/schema.prisma"
     },
     "prisma": {
         "schema": "packages/database/schema.prisma",
