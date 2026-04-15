@@ -1,41 +1,70 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
+import { AiProviderFactory } from '../../common/ai/ai-provider.factory';
 
 @Injectable()
 export class AnalysisService {
-    constructor(private prisma: PrismaService) { }
+    constructor(
+        private prisma: PrismaService,
+        private aiFactory: AiProviderFactory,
+    ) {}
 
-    // 1. Ingest Sales Data (Webhook from Shopify/ERP)
     async ingestSalesData(sku: string, unitsSold: number, returns: number) {
-        // Upsert performance metric
-        // In real app, calculate rates based on existing stock
-        const sellThrough = 0.75; // Mock calculation
+        const returnRate = unitsSold > 0 ? returns / unitsSold : 0;
+        const sellThroughRate = unitsSold > 0 ? Math.min((unitsSold - returns) / unitsSold, 1) : 0;
 
         return this.prisma.performanceMetric.upsert({
             where: { sku },
             create: {
                 sku,
-                sellThroughRate: sellThrough,
-                returnRate: returns / unitsSold,
-                customerSentiment: 0.8
+                sellThroughRate,
+                returnRate,
+                customerSentiment: 0.7,
             },
             update: {
-                sellThroughRate: sellThrough,
-                returnRate: returns / unitsSold
-            }
+                sellThroughRate,
+                returnRate,
+            },
         });
     }
 
-    // 2. AI Insight Generation
-    async generateNextSeasonInsights(seasonId: string) {
-        // Analyze all products in the season
-        // Find correlation between "Red" and "High Sell Through"
+    async generateNextSeasonInsights(seasonId: string, userId: string) {
+        const metrics = await this.prisma.performanceMetric.findMany({ take: 50 });
+        const designs = await this.prisma.productDesign.findMany({
+            where: { linePlan: { seasonId } },
+            include: { linePlan: true, costSheet: true },
+            take: 30,
+        });
 
-        return {
-            topPerformers: ["Floral Maxi Dress", "Silk Blouse"],
-            underPerformers: ["Wool Trousers"],
-            insight: "Floral prints outperformed solids by 25%. Maintain floral ratio for next season.",
-            actionItem: "Increase Print budget in Mod 1 Strategy."
+        const provider = await this.aiFactory.getForUser(userId);
+
+        const dataContext = designs.length > 0
+            ? `Sezon tasarım sayısı: ${designs.length}. Kategoriler: ${[...new Set(designs.map((d: any) => d.linePlan?.category))].join(', ')}`
+            : 'Sezon verisi henüz yok, genel Türk moda pazarı trendleri için öneriler sun.';
+
+        const prompt = `Türk hazır giyim markası için sezon sonu analizi yap.
+${dataContext}
+Performans metrikleri: ${metrics.length} SKU kaydı var.
+
+Şu yapıda JSON döndür:
+{
+  "enIyiPerformancilar": ["string"],
+  "dusukPerformancilar": ["string"],
+  "gorusler": "string (2-3 cümle Türkçe analiz)",
+  "gelecekSezonOnerileri": ["string (3-5 öneri)"],
+  "kategoriInsight": "string"
+}
+
+Türk moda pazarına ve sezona özgü, pratik öneriler sun.`;
+
+        type InsightDto = {
+            enIyiPerformancilar: string[];
+            dusukPerformancilar: string[];
+            gorusler: string;
+            gelecekSezonOnerileri: string[];
+            kategoriInsight: string;
         };
+
+        return provider.generateJson<InsightDto>(prompt, '{}');
     }
 }

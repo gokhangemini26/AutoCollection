@@ -6,19 +6,26 @@ import { PrismaService } from '../../common/prisma/prisma.service';
 export class StrategyService {
     constructor(private prisma: PrismaService) { }
 
-    async createSeason(data: { name: string; budget: number; skuTarget: number }) {
-        // 1. Validate Business Logic
+    async createSeason(data: {
+        name: string;
+        budget: number;
+        skuTarget: number;
+        targetMargin?: number;
+        startDate?: string;
+        endDate?: string;
+    }) {
         if (data.budget < 10000) {
-            throw new BadRequestException('Minimum budget is $10k');
+            throw new BadRequestException('Minimum bütçe ₺10.000 olmalıdır.');
         }
 
-        // 2. Transaction: Create Season + Strategy Doc
         return this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
             const season = await tx.season.create({
                 data: {
                     name: data.name,
-                    startDate: new Date(),
-                    endDate: new Date(new Date().setMonth(new Date().getMonth() + 6)),
+                    startDate: data.startDate ? new Date(data.startDate) : new Date(),
+                    endDate: data.endDate
+                        ? new Date(data.endDate)
+                        : new Date(new Date().setMonth(new Date().getMonth() + 6)),
                     status: 'PLANNED',
                 },
             });
@@ -28,12 +35,29 @@ export class StrategyService {
                     seasonId: season.id,
                     budgetCap: data.budget,
                     skuTargetCount: data.skuTarget,
-                    targetMargin: 0.60, // Default 60%
+                    targetMargin: data.targetMargin ?? 0.60,
                     keyDates: {},
                 },
             });
 
-            return season;
+            return tx.season.findUnique({
+                where: { id: season.id },
+                include: { strategyDoc: true },
+            });
+        });
+    }
+
+    async getAllSeasons() {
+        return this.prisma.season.findMany({
+            include: { strategyDoc: true },
+            orderBy: { startDate: 'desc' },
+        });
+    }
+
+    async getSeasonById(id: string) {
+        return this.prisma.season.findUnique({
+            where: { id },
+            include: { strategyDoc: true, linePlan: true },
         });
     }
 

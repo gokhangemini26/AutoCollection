@@ -5,12 +5,17 @@ import { PrismaService } from '../../common/prisma/prisma.service';
 export class CostingService {
     constructor(private prisma: PrismaService) { }
 
+    async getCostSheet(designId: string) {
+        return this.prisma.costSheet.findUnique({ where: { designId } });
+    }
+
     async calculateAndValidateCost(designId: string, costs: {
         fabricPrice: number;
         fabricYield: number;
         makePrice: number;
         logistics: number;
         dutyPercent: number;
+        kdvOrani?: number;
     }) {
         // 1. Calculate Landed Cost
         const fabricCost = costs.fabricPrice * costs.fabricYield;
@@ -34,28 +39,12 @@ export class CostingService {
         }
 
         const { targetMargin } = design.linePlan.season.strategyDoc;
-        // targetMargin is stored as decimal e.g. 0.60 for 60%
-        // Retail = Cost / (1 - Margin)
-
-        // We assume a standard target Retail based on price point, 
-        // but here let's calculate the IMPLIED Retail to hit margin.
         const impliedRetail = landedCost / (1 - Number(targetMargin));
+        const kdvOrani = costs.kdvOrani ?? 20;
+        const kdvTutari = impliedRetail * (kdvOrani / 100);
+        const kdvDahilFiyat = impliedRetail + kdvTutari;
+        const achievedMargin = (impliedRetail - landedCost) / impliedRetail;
 
-        // 3. Margin Guard
-        // If the implied retail is unreasonably high for the category/pricepoint, warn.
-        // simplistic check: returned object contains status.
-
-        const status = {
-            landedCost,
-            requiredRetail: impliedRetail,
-            marginAchieved: true, // simplified
-            meta: {
-                fabricCost,
-                dutyCost
-            }
-        };
-
-        // Save to DB (CostSheet)
         await this.prisma.costSheet.upsert({
             where: { designId },
             create: {
@@ -66,17 +55,29 @@ export class CostingService {
                 duty: dutyCost,
                 targetRetail: impliedRetail,
                 wholesalePrice: impliedRetail * 0.4,
-                isApproved: false
+                kdvOrani,
+                isApproved: false,
             },
             update: {
                 rawMaterial: fabricCost,
                 labor: costs.makePrice,
                 logistics: costs.logistics,
                 duty: dutyCost,
-                targetRetail: impliedRetail
-            }
+                targetRetail: impliedRetail,
+                wholesalePrice: impliedRetail * 0.4,
+                kdvOrani,
+            },
         });
 
-        return status;
+        return {
+            landedCost,
+            kdvHaricFiyat: impliedRetail,
+            kdvDahilFiyat,
+            kdvOrani,
+            wholesalePrice: impliedRetail * 0.4,
+            achievedMargin,
+            marginAchieved: achievedMargin >= 0.55,
+            meta: { fabricCost, dutyCost },
+        };
     }
 }

@@ -23,6 +23,12 @@ enum UserRole {
   MODULE_USER
 }
 
+enum AiProvider {
+  GEMINI
+  OPENAI
+  CLAUDE
+}
+
 enum Department {
   DESIGN
   MERCHANDISING
@@ -47,6 +53,7 @@ model User {
   designs         ProductDesign[]
   loginLogs       LoginLog[]
   operationLogs   OperationLog[]
+  userApiKeys     UserApiKey[]
 }
 
 model LoginLog {
@@ -214,6 +221,7 @@ model FabricOption {
   materialName    String
   composition     String        // "100% Silk"
   supplierRef     String
+  supplierCity    String?       // Bursa, Çerkezköy, İstanbul vb.
   isPrimary       Boolean       @default(false)
 }
 
@@ -252,7 +260,8 @@ model CostSheet {
   // Targets
   targetRetail    Decimal
   wholesalePrice  Decimal
-  
+  kdvOrani        Int           @default(20)  // 10 veya 20
+
   isApproved      Boolean       @default(false)
 }
 
@@ -310,6 +319,19 @@ model ExternalApiKey {
   usageLimit      Int           // Daily request limit
   currentUsage    Int           @default(0)
   lastReset       DateTime
+}
+
+// Kullanıcı başına AI API anahtarı
+model UserApiKey {
+  id              String        @id @default(uuid())
+  userId          String
+  user            User          @relation(fields: [userId], references: [id])
+  provider        AiProvider
+  keyEncrypted    String        // AES-256-GCM şifreli
+  isActive        Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+
+  @@unique([userId, provider])
 }
 
 model FeatureToggle {

@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 
-// 1. Define Types
 export type AgentStatus = 'IDLE' | 'THINKING' | 'WARNING' | 'BLOCKED';
 
 export interface AgentState {
@@ -18,54 +17,51 @@ export interface AgentState {
     };
 }
 
-// 2. The Rule Engine (Mock for Phase 4)
 const RULE_BOOK: Record<string, (ctx: any, payload: any) => string | null> = {
-    // Rule: Cannot approve Cost Sheet if Margin is too low
-    'APPROVE_COST': (ctx, payload) => {
-        if (payload.margin < 0.55) { // 55%
-            return "Margin Breach: Target is 60%. Please renegotiate fabric costs.";
-        }
-        return null; // OK
-    },
-    // Rule: Cannot create Design without a Season
-    'CREATE_DESIGN': (ctx) => {
-        if (!ctx.activeSeasonId) {
-            return "Context Error: Please select a Season (Mod 1) first.";
+    'APPROVE_COST': (_ctx, payload) => {
+        if (payload.margin < 0.55) {
+            return `Marj İhlali: Hedef %60, mevcut %${(payload.margin * 100).toFixed(1)}. Kumaş maliyetini yeniden görüşün.`;
         }
         return null;
-    }
+    },
+    'CREATE_DESIGN': (ctx) => {
+        if (!ctx.activeSeasonId) {
+            return 'Bağlam Hatası: Önce Mod 1 Strateji\'den bir sezon seçin.';
+        }
+        return null;
+    },
+    'APPROVE_DESIGN': (_ctx, payload) => {
+        if (!payload.hasCostSheet) {
+            return 'Maliyet Tablosu Eksik: Tasarımı onaylamadan önce maliyetlendirme yapılmalıdır.';
+        }
+        return null;
+    },
 };
 
-// 3. The Store (Brain)
 export const useAgUiStore = create<AgentState>((set, get) => ({
     status: 'IDLE',
     message: null,
-    context: {
-        currentModule: 0,
-    },
+    context: { currentModule: 0 },
     actions: {
         setStatus: (status, message = null) => set({ status, message }),
         setContext: (newCtx) => set((state) => ({ context: { ...state.context, ...newCtx } })),
 
-        // The Interceptor Function
         validateAction: (actionType, payload) => {
             const state = get();
             const rule = RULE_BOOK[actionType];
+            if (!rule) return true;
 
-            if (!rule) return true; // No rule = Allowed
+            set({ status: 'THINKING', message: 'Kural kontrol ediliyor...' });
 
-            set({ status: 'THINKING' });
-
-            // Simulate "Thought" delay for UX
             const error = rule(state.context, payload);
 
             if (error) {
                 set({ status: 'BLOCKED', message: error });
-                return false; // Action Blocked
+                return false;
             }
 
             set({ status: 'IDLE', message: null });
-            return true; // Action Allowed
-        }
-    }
+            return true;
+        },
+    },
 }));

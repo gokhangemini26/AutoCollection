@@ -12,8 +12,14 @@
         "build:api": "cd apps/api && npm run build",
         "build:web": "cd apps/web && npm run build",
         "test": "turbo run test",
-        "db:migrate": "prisma migrate dev",
+        "db:migrate": "prisma migrate dev --schema=packages/database/schema.prisma",
+        "db:seed": "ts-node packages/database/seed.ts",
+        "db:reset": "prisma migrate reset --schema=packages/database/schema.prisma",
         "postinstall": "npx prisma generate --schema=packages/database/schema.prisma"
+    },
+    "prisma": {
+        "schema": "packages/database/schema.prisma",
+        "seed": "ts-node packages/database/seed.ts"
     },
     "devDependencies": {
         "turbo": "^1.10.0",
