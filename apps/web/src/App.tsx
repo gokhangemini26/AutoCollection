@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
 import { AppShell } from './components/layout/AppShell';
+import { LandingPage } from './pages/landing/LandingPage';
 
 // Lazy-loaded module pages
 const DashboardPage = lazy(() => import('./pages/dashboard/DashboardPage').then((m) => ({ default: m.DashboardPage })));
@@ -22,7 +23,7 @@ const PageLoader = () => (
 const ProtectedRoute = ({ children, adminOnly = false }: { children: React.ReactNode; adminOnly?: boolean }) => {
     const { isAuthenticated, isLoading, user } = useAuth();
     if (isLoading) return <div className="min-h-screen bg-stone-950 flex items-center justify-center text-stone-500">Yükleniyor...</div>;
-    if (!isAuthenticated) return <Navigate to="/login" />;
+    if (!isAuthenticated) return <Navigate to="/landing" />;
     if (adminOnly && user?.role === 'MODULE_USER') return <Navigate to="/" />;
     return <>{children}</>;
 };
@@ -30,6 +31,7 @@ const ProtectedRoute = ({ children, adminOnly = false }: { children: React.React
 function AppContent() {
     return (
         <Routes>
+            <Route path="/landing" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
 
