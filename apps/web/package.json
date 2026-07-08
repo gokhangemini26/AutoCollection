@@ -6,6 +6,7 @@
     "scripts": {
         "dev": "vite",
         "build": "tsc && vite build",
+        "build:web": "tsc && vite build",
         "vercel-build": "npm install && tsc && vite build",
         "preview": "vite preview"
     },
