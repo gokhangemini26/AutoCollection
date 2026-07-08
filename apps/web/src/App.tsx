@@ -5,6 +5,10 @@ import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
 import { AppShell } from './components/layout/AppShell';
 import { LandingPage } from './pages/landing/LandingPage';
+const WatchLandingPage = lazy(() => import('./pages/watch-landing/WatchLandingPage'));
+const AtelierPage = lazy(() => import('./pages/atelier/AtelierPage'));
+const DefilePage = lazy(() => import('./pages/defile/DefilePage'));
+const IlhamPage = lazy(() => import('./pages/ilham/IlhamPage'));
 
 // Lazy-loaded module pages
 const DashboardPage = lazy(() => import('./pages/dashboard/DashboardPage').then((m) => ({ default: m.DashboardPage })));
@@ -32,8 +36,30 @@ function AppContent() {
     return (
         <Routes>
             <Route path="/landing" element={<LandingPage />} />
+            <Route path="/watch" element={
+              <Suspense fallback={<div style={{ background: '#080808', width: '100vw', height: '100vh' }} />}>
+                <WatchLandingPage />
+              </Suspense>
+            } />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+
+            {/* MAISON studios — public demo surfaces */}
+            <Route path="/atelier" element={
+                <Suspense fallback={<div style={{ background: '#0C0B09', width: '100vw', height: '100vh' }} />}>
+                    <AtelierPage />
+                </Suspense>
+            } />
+            <Route path="/defile" element={
+                <Suspense fallback={<div style={{ background: '#0C0B09', width: '100vw', height: '100vh' }} />}>
+                    <DefilePage />
+                </Suspense>
+            } />
+            <Route path="/ilham" element={
+                <Suspense fallback={<div style={{ background: '#0C0B09', width: '100vw', height: '100vh' }} />}>
+                    <IlhamPage />
+                </Suspense>
+            } />
 
             <Route path="/" element={
                 <ProtectedRoute>

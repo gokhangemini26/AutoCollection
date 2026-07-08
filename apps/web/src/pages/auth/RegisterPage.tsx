@@ -21,11 +21,13 @@ export const RegisterPage = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-stone-950 text-stone-100 font-sans p-4">
-            <div className="w-full max-w-md p-8 bg-stone-900 border border-stone-800 rounded-lg shadow-2xl">
-                <div className="mb-8 text-center">
-                    <h1 className="text-3xl font-bold tracking-widest text-white mb-2">VIBE<span className="text-stone-500">ERP</span></h1>
-                    <p className="text-stone-400">Create a new account</p>
+        <div className="min-h-screen flex items-center justify-center bg-ink text-ivory font-sans p-4">
+            <div className="w-full max-w-md p-10 bg-carbon border border-seam">
+                <div className="mb-10 text-center">
+                    <Link to="/landing" className="font-display text-3xl font-light tracking-[0.25em] text-ivory">
+                        MAISON
+                    </Link>
+                    <p className="text-taupe text-[10px] tracking-luxe uppercase mt-3">Atölyeye katılın</p>
                 </div>
 
                 {error && (
@@ -34,50 +36,50 @@ export const RegisterPage = () => {
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-5">
                     <div>
-                        <label className="block text-sm font-medium text-stone-400 mb-1">Full Name</label>
+                        <label className="block text-[10px] tracking-luxe text-taupe uppercase mb-2">Ad Soyad</label>
                         <input
                             type="text"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            className="w-full px-4 py-2 bg-stone-950 border border-stone-800 rounded focus:border-white focus:outline-none transition-colors text-white"
+                            className="w-full px-4 py-2.5 bg-ink border border-seam focus:border-champagne focus:outline-none transition-colors text-ivory"
                             required
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-stone-400 mb-1">Email</label>
+                        <label className="block text-[10px] tracking-luxe text-taupe uppercase mb-2">E-posta</label>
                         <input
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full px-4 py-2 bg-stone-950 border border-stone-800 rounded focus:border-white focus:outline-none transition-colors text-white"
+                            className="w-full px-4 py-2.5 bg-ink border border-seam focus:border-champagne focus:outline-none transition-colors text-ivory"
                             required
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-stone-400 mb-1">Password</label>
+                        <label className="block text-[10px] tracking-luxe text-taupe uppercase mb-2">Şifre</label>
                         <input
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full px-4 py-2 bg-stone-950 border border-stone-800 rounded focus:border-white focus:outline-none transition-colors text-white"
+                            className="w-full px-4 py-2.5 bg-ink border border-seam focus:border-champagne focus:outline-none transition-colors text-ivory"
                             required
                         />
                     </div>
 
                     <button
                         type="submit"
-                        className="w-full py-3 bg-white text-black font-bold rounded hover:bg-stone-200 transition-colors uppercase tracking-wide"
+                        className="w-full py-3.5 bg-ivory text-ink text-xs tracking-luxe uppercase hover:bg-champagne transition-colors"
                     >
-                        Register
+                        Kayıt Ol
                     </button>
                 </form>
 
-                <div className="mt-6 text-center text-sm text-stone-500">
-                    Already have an account?{' '}
-                    <Link to="/login" className="text-white hover:underline">
-                        Sign In
+                <div className="mt-8 text-center text-xs text-taupe">
+                    Zaten hesabınız var mı?{' '}
+                    <Link to="/login" className="text-champagne hover:text-ivory transition-colors">
+                        Giriş Yapın
                     </Link>
                 </div>
             </div>

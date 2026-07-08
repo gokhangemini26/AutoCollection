@@ -1,7 +1,66 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Manrope:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 body {
-    @apply bg-stone-950 text-stone-100;
+    @apply bg-ink text-ivory font-sans antialiased;
+}
+
+::selection {
+    background: #C3A46E;
+    color: #0C0B09;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #0C0B09;
+}
+::-webkit-scrollbar-thumb {
+    background: #2A2723;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #C3A46E;
+}
+
+@keyframes maison-word {
+    from { opacity: 0; transform: translateY(0.4em); filter: blur(4px); }
+    to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+.maison-word {
+    display: inline-block;
+    opacity: 0;
+    animation: maison-word 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes maison-rise {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.maison-reveal {
+    opacity: 0;
+}
+.maison-reveal.is-visible {
+    animation: maison-rise 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes maison-thread {
+    from { transform: scaleY(0); }
+    to { transform: scaleY(1); }
+}
+.maison-thread {
+    transform-origin: top;
+    animation: maison-thread 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .maison-word, .maison-reveal.is-visible, .maison-thread {
+        animation-duration: 0.01ms;
+        animation-delay: 0ms;
+    }
 }

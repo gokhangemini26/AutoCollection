@@ -17,6 +17,12 @@ const NAV_ITEMS: NavItem[] = [
     { to: '/analiz', label: TR.kenarCubugu.analiz },
 ];
 
+const STUDIO_ITEMS: NavItem[] = [
+    { to: '/ilham', label: 'İlham — Fikir Stüdyosu' },
+    { to: '/atelier', label: 'Atölye — 3D Prova' },
+    { to: '/defile', label: 'Defile — Koleksiyon Filmi' },
+];
+
 export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { status, message } = useAgUiStore();
     const { user, logout } = useAuth();
@@ -27,9 +33,10 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
             {/* SIDEBAR */}
             <aside className="w-64 border-r border-stone-800 p-4 flex flex-col shrink-0">
                 <NavLink to="/" className="block mb-8">
-                    <h1 className="text-xl font-bold tracking-widest text-white">
-                        VIBE<span className="text-stone-500">ERP</span>
+                    <h1 className="font-display text-2xl font-light tracking-[0.25em] text-white">
+                        MAISON
                     </h1>
+                    <p className="text-[9px] tracking-[0.3em] uppercase text-stone-500 mt-1">Fashion Intelligence</p>
                 </NavLink>
 
                 <nav className="space-y-1 flex-1 overflow-y-auto">
@@ -40,6 +47,19 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
                                 : highlight
                                     ? 'text-white hover:bg-stone-800'
                                     : 'text-stone-400 hover:text-stone-200 hover:bg-stone-900'
+                            }`
+                        }>
+                            {label}
+                        </NavLink>
+                    ))}
+
+                    <div className="h-px bg-stone-800 my-3" />
+                    <p className="px-3 pb-1 text-[9px] tracking-[0.3em] uppercase text-champagne/70">Stüdyolar</p>
+                    {STUDIO_ITEMS.map(({ to, label }) => (
+                        <NavLink key={to} to={to} className={({ isActive }) =>
+                            `block w-full text-left px-3 py-2 rounded text-sm transition-colors ${isActive
+                                ? 'bg-champagne text-ink font-medium'
+                                : 'text-champagne/80 hover:text-champagne hover:bg-stone-900'
                             }`
                         }>
                             {label}
